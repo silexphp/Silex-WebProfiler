@@ -50,6 +50,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             $dispatcher = new TraceableEventDispatcher($dispatcher, $app['stopwatch'], $app['logger']);
             $dispatcher->setProfiler($app['profiler']);
 
+            $dispatcher->addSubscriber($app['profiler.listener']);
+            $dispatcher->addSubscriber($app['web_profiler.toolbar.listener']);
+            $dispatcher->addSubscriber($app['profiler']->get('request'));
+
             return $dispatcher;
         }));
 
@@ -126,10 +130,16 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['code.file_link_format'] = null;
 
-        $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
+        $app['twig'] = $app->share($app->extend('twig', function ($twig, $app) {
             $twig->addExtension(new CodeExtension($app['code.file_link_format'], '', $app['charset']));
 
             return $twig;
+        }));
+
+        $app['twig.loader.filesystem'] = $app->share($app->extend('twig.loader.filesystem', function ($loader, $app) {
+            $loader->addPath($app['profiler.template_path'], 'WebProfiler');
+
+            return $loader;
         }));
 
         // templates comes from the Symfony WebProfilerBundle
@@ -178,10 +188,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
     public function boot(Application $app)
     {
-        $app['dispatcher']->addSubscriber($app['profiler.listener']);
-        $app['dispatcher']->addSubscriber($app['web_profiler.toolbar.listener']);
-        $app['dispatcher']->addSubscriber($app['profiler']->get('request'));
-
-        $app['twig.loader.filesystem']->addPath($app['profiler.template_path'], 'WebProfiler');
+        // make sure dispatcher and profiler are initialized early
+        $dispatcher = $app['dispatcher'];
     }
 }
