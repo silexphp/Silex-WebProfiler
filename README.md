@@ -6,7 +6,7 @@ Symfony web debug toolbar and the Symfony profiler in your Silex application.
 
 To enable it, add this dependency to your `composer.json` file:
 
-    "sensiolabs/silex-web-profiler": "1.0.0"
+    "silex/web-profiler": "1.0.0"
 
 And enable it in your application:
 
