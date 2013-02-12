@@ -50,10 +50,6 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             $dispatcher = new TraceableEventDispatcher($dispatcher, $app['stopwatch'], $app['logger']);
             $dispatcher->setProfiler($app['profiler']);
 
-            $dispatcher->addSubscriber($app['profiler.listener']);
-            $dispatcher->addSubscriber($app['web_profiler.toolbar.listener']);
-            $dispatcher->addSubscriber($app['profiler']->get('request'));
-
             return $dispatcher;
         }));
 
@@ -177,7 +173,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
     public function boot(Application $app)
     {
-        // make sure dispatcher and profiler are initialized early
         $dispatcher = $app['dispatcher'];
+
+        $dispatcher->addSubscriber($app['profiler.listener']);
+        $dispatcher->addSubscriber($app['web_profiler.toolbar.listener']);
+        $dispatcher->addSubscriber($app['profiler']->get('request'));
     }
 }
