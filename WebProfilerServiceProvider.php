@@ -142,21 +142,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             return $loader;
         }));
 
-        // templates comes from the Symfony WebProfilerBundle
-        // by default, we assume that this provider and the web profiler are installed via composer
-        // if not, override the path manually
         $app['profiler.template_path'] = function () {
-            // the web profiler as a sub-tree split
-            if (is_dir($dir = __DIR__.'/../../../../symfony/web-profiler-bundle/Symfony/Bundle/WebProfilerBundle/Resources/views')) {
-                return $dir;
-            }
+            $r = new \ReflectionClass('Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener');
 
-            // the web profiler as the Symfony repo
-            if (is_dir($dir = __DIR__.'/../../../../symfony/symfony/src/Symfony/Bundle/WebProfilerBundle/Resources/views')) {
-                return $dir;
-            }
-
-            throw new \RuntimeException('Unable to find the web profiler templates. Set "profiler.template_path" manually.');
+            return dirname(dirname($r->getFileName())).'/Resources/views';
         };
     }
 
