@@ -133,12 +133,12 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }));
 
         $app['twig.loader.filesystem'] = $app->share($app->extend('twig.loader.filesystem', function ($loader, $app) {
-            $loader->addPath($app['profiler.template_path'], 'WebProfiler');
+            $loader->addPath($app['profiler.templates_path'], 'WebProfiler');
 
             return $loader;
         }));
 
-        $app['profiler.template_path'] = function () {
+        $app['profiler.templates_path'] = function () {
             $r = new \ReflectionClass('Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener');
 
             return dirname(dirname($r->getFileName())).'/Resources/views';
