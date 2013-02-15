@@ -164,6 +164,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $controllers->get('/{token}/search/results', 'web_profiler.controller.profiler:searchResultsAction')->bind('_profiler_search_results');
         $controllers->get('/{token}', 'web_profiler.controller.profiler:panelAction')->bind('_profiler');
         $controllers->get('/wdt/{token}', 'web_profiler.controller.profiler:toolbarAction')->bind('_wdt');
+        $controllers->get('/', 'web_profiler.controller.profiler:homeAction')->bind('_profiler_home');
 
         return $controllers;
     }
