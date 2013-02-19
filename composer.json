@@ -12,8 +12,8 @@
     "minimum-stability": "dev",
     "require": {
         "silex/silex": "~1.0@dev",
-        "symfony/web-profiler-bundle": "~2.2@dev",
-        "symfony/stopwatch": "~2.2@dev"
+        "symfony/web-profiler-bundle": "~2.2-RC1@dev",
+        "symfony/stopwatch": "~2.2-RC1@dev"
     },
     "autoload": {
         "psr-0": { "Silex\\Provider\\": "" }
