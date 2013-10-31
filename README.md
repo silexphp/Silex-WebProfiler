@@ -24,3 +24,7 @@ enable those if that's not already the case:
     $app->register(new Provider\ServiceControllerServiceProvider());
     $app->register(new Provider\TwigServiceProvider());
     $app->register(new Provider\UrlGeneratorServiceProvider());
+
+If you are using `MonologServiceProvider` for logs, you must also add
+`symfony/monolog-bridge` as a dependency in your `composer.json` to get the
+logs in the profiler.
