@@ -112,6 +112,8 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app['web_profiler.controller.exception'] = $app->share(function ($app) {
             return new ExceptionController($app['profiler'], $app['twig'], $app['debug']);
         });
+        
+        $app['web_profiler.toolbar.enable'] = true;
 
         $app['web_profiler.toolbar.listener'] = $app->share(function ($app) {
             return new WebDebugToolbarListener($app['twig']);
@@ -207,7 +209,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $dispatcher = $app['dispatcher'];
 
         $dispatcher->addSubscriber($app['profiler.listener']);
-        $dispatcher->addSubscriber($app['web_profiler.toolbar.listener']);
+        
+        if($app['web_profiler.toolbar.enable']) {
+            $dispatcher->addSubscriber($app['web_profiler.toolbar.listener']);
+        }
+        
         $dispatcher->addSubscriber($app['profiler']->get('request'));
         $app->mount($app['profiler.mount_prefix'], $this->connect($app));
     }
