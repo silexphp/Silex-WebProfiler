@@ -15,6 +15,7 @@ use Symfony\Bundle\WebProfilerBundle\Controller\ExceptionController;
 use Symfony\Bundle\WebProfilerBundle\Controller\RouterController;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
 use Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener;
+use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\Form\Extension\DataCollector\FormDataExtractor;
 use Symfony\Component\Form\Extension\DataCollector\Proxy\ResolvedTypeFactoryDataCollectorProxy;
@@ -153,6 +154,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['twig'] = $app->share($app->extend('twig', function ($twig, $app) {
             $twig->addExtension(new CodeExtension($app['code.file_link_format'], '', $app['charset']));
+
+            if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
+                $twig->addExtension(new WebProfilerExtension());
+            }
 
             return $twig;
         }));
