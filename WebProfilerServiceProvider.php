@@ -11,11 +11,13 @@
 
 namespace Silex\Provider;
 
+use Pimple\Container;
 use Symfony\Bundle\WebProfilerBundle\Controller\ExceptionController;
 use Symfony\Bundle\WebProfilerBundle\Controller\RouterController;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
 use Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener;
 use Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\Form\Extension\DataCollector\FormDataExtractor;
 use Symfony\Component\Form\Extension\DataCollector\Proxy\ResolvedTypeFactoryDataCollectorProxy;
@@ -35,8 +37,10 @@ use Symfony\Component\HttpKernel\Debug\TraceableEventDispatcher;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Bridge\Twig\Extension\CodeExtension;
 use Silex\Application;
-use Silex\ServiceProviderInterface;
-use Silex\ControllerProviderInterface;
+use Pimple\ServiceProviderInterface;
+use Silex\Api\ControllerProviderInterface;
+use Silex\Api\BootableProviderInterface;
+use Silex\Api\EventListenerProviderInterface;
 use Silex\ServiceControllerResolver;
 
 /**
@@ -44,17 +48,16 @@ use Silex\ServiceControllerResolver;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class WebProfilerServiceProvider implements ServiceProviderInterface, ControllerProviderInterface
+class WebProfilerServiceProvider implements ServiceProviderInterface, ControllerProviderInterface, BootableProviderInterface, EventListenerProviderInterface
 {
-    public function register(Application $app)
+    public function register(Container $app)
     {
         $app['profiler.mount_prefix'] = '/_profiler';
-        $app['dispatcher'] = $app->share($app->extend('dispatcher', function ($dispatcher, $app) {
+        $app->extend('dispatcher', function ($dispatcher, $app) {
             $dispatcher = new TraceableEventDispatcher($dispatcher, $app['stopwatch'], $app['logger']);
-            $dispatcher->setProfiler($app['profiler']);
 
             return $dispatcher;
-        }));
+        });
 
         $app['data_collector.templates'] = array(
             array('config',    '@WebProfiler/Collector/config.html.twig'),
@@ -68,56 +71,56 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             array('form',      '@WebProfiler/Collector/form.html.twig'),
         );
 
-        $app['data_collectors'] = $app->share(function ($app) {
+        $app['data_collectors'] = function ($app) {
             return array(
-                'config'    => $app->share(function ($app) { return new ConfigDataCollector(); }),
-                'request'   => $app->share(function ($app) { return new RequestDataCollector(); }),
-                'exception' => $app->share(function ($app) { return new ExceptionDataCollector(); }),
-                'events'    => $app->share(function ($app) { return new EventDataCollector(); }),
-                'logger'    => $app->share(function ($app) { return new LoggerDataCollector($app['logger']); }),
-                'time'      => $app->share(function ($app) { return new TimeDataCollector(null, $app['stopwatch']); }),
-                'router'    => $app->share(function ($app) { return new RouterDataCollector(); }),
-                'memory'    => $app->share(function ($app) { return new MemoryDataCollector(); }),
+                'config'    => function ($app) { return new ConfigDataCollector(); },
+                'request'   => function ($app) { return new RequestDataCollector(); },
+                'exception' => function ($app) { return new ExceptionDataCollector(); },
+                'events'    => function ($app) { return new EventDataCollector($app['dispatcher']); },
+                'logger'    => function ($app) { return new LoggerDataCollector($app['logger']); },
+                'time'      => function ($app) { return new TimeDataCollector(null, $app['stopwatch']); },
+                'router'    => function ($app) { return new RouterDataCollector(); },
+                'memory'    => function ($app) { return new MemoryDataCollector(); },
             );
-        });
+        };
 
         if (isset($app['form.resolved_type_factory']) && class_exists('\Symfony\Component\Form\Extension\DataCollector\FormDataCollector')) {
-            $app['data_collectors.form.extractor'] = $app->share(function () { return new FormDataExtractor(); });
+            $app['data_collectors.form.extractor'] = function () { return new FormDataExtractor(); };
 
-            $app['data_collectors'] = $app->share($app->extend('data_collectors', function ($collectors, $app) {
-                $collectors['form'] = $app->share(function ($app) { return new FormDataCollector($app['data_collectors.form.extractor']); });
+            $app->extend('data_collectors', function ($collectors, $app) {
+                $collectors['form'] = function ($app) { return new FormDataCollector($app['data_collectors.form.extractor']); };
 
                 return $collectors;
-            }));
+            });
 
-            $app['form.resolved_type_factory'] = $app->share($app->extend('form.resolved_type_factory', function ($factory, $app) {
+            $app->extend('form.resolved_type_factory', function ($factory, $app) {
                 return new ResolvedTypeFactoryDataCollectorProxy($factory, $app['data_collectors']['form']($app));
-            }));
+            });
 
-            $app['form.type.extensions'] = $app->share($app->extend('form.type.extensions', function ($extensions, $app) {
+            $app->extend('form.type.extensions', function ($extensions, $app) {
                 $extensions[] = new DataCollectorTypeExtension($app['data_collectors']['form']($app));
 
                 return $extensions;
-            }));
+            });
         }
 
-        $app['web_profiler.controller.profiler'] = $app->share(function ($app) {
+        $app['web_profiler.controller.profiler'] = function ($app) {
             return new ProfilerController($app['url_generator'], $app['profiler'], $app['twig'], $app['data_collector.templates'], $app['web_profiler.debug_toolbar.position']);
-        });
+        };
 
-        $app['web_profiler.controller.router'] = $app->share(function ($app) {
+        $app['web_profiler.controller.router'] = function ($app) {
             return new RouterController($app['profiler'], $app['twig'], isset($app['url_matcher']) ? $app['url_matcher'] : null, $app['routes']);
-        });
+        };
 
-        $app['web_profiler.controller.exception'] = $app->share(function ($app) {
+        $app['web_profiler.controller.exception'] = function ($app) {
             return new ExceptionController($app['profiler'], $app['twig'], $app['debug']);
-        });
+        };
 
-        $app['web_profiler.toolbar.listener'] = $app->share(function ($app) {
+        $app['web_profiler.toolbar.listener'] = function ($app) {
             return new WebDebugToolbarListener($app['twig']);
-        });
+        };
 
-        $app['profiler'] = $app->share(function ($app) {
+        $app['profiler'] = function ($app) {
             $profiler = new Profiler($app['profiler.storage'], $app['logger']);
 
             foreach ($app['data_collectors'] as $collector) {
@@ -125,11 +128,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             }
 
             return $profiler;
-        });
+        };
 
-        $app['profiler.storage'] = $app->share(function ($app) {
+        $app['profiler.storage'] = function ($app) {
             return new FileProfilerStorage('file:'.$app['profiler.cache_dir']);
-        });
+        };
 
         $app['profiler.request_matcher'] = null;
         $app['profiler.only_exceptions'] = false;
@@ -137,22 +140,22 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app['web_profiler.debug_toolbar.enable'] = true;
         $app['web_profiler.debug_toolbar.position'] = 'bottom';
 
-        $app['profiler.listener'] = $app->share(function ($app) {
+        $app['profiler.listener'] = function ($app) {
             return new ProfilerListener(
                 $app['profiler'],
                 $app['profiler.request_matcher'],
                 $app['profiler.only_exceptions'],
                 $app['profiler.only_master_requests']
             );
-        });
+        };
 
-        $app['stopwatch'] = $app->share(function () {
+        $app['stopwatch'] = function () {
             return new Stopwatch();
-        });
+        };
 
         $app['code.file_link_format'] = null;
 
-        $app['twig'] = $app->share($app->extend('twig', function ($twig, $app) {
+        $app->extend('twig', function ($twig, $app) {
             $twig->addExtension(new CodeExtension($app['code.file_link_format'], '', $app['charset']));
 
             if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
@@ -160,13 +163,13 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             }
 
             return $twig;
-        }));
+        });
 
-        $app['twig.loader.filesystem'] = $app->share($app->extend('twig.loader.filesystem', function ($loader, $app) {
+        $app->extend('twig.loader.filesystem', function ($loader, $app) {
             $loader->addPath($app['profiler.templates_path'], 'WebProfiler');
 
             return $loader;
-        }));
+        });
 
         $app['profiler.templates_path'] = function () {
             $r = new \ReflectionClass('Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener');
@@ -202,8 +205,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
     public function boot(Application $app)
     {
-        $dispatcher = $app['dispatcher'];
+        $app->mount($app['profiler.mount_prefix'], $this->connect($app));
+    }
 
+    public function subscribe(Container $app, EventDispatcherInterface $dispatcher)
+    {
         $dispatcher->addSubscriber($app['profiler.listener']);
 
         if ($app['web_profiler.debug_toolbar.enable']) {
@@ -211,6 +217,5 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }
 
         $dispatcher->addSubscriber($app['profiler']->get('request'));
-        $app->mount($app['profiler.mount_prefix'], $this->connect($app));
     }
 }

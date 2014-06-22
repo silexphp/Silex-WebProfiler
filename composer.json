@@ -10,9 +10,9 @@
         }
     ],
     "require": {
-        "silex/silex": "~1.0",
-        "symfony/web-profiler-bundle": "~2.2",
-        "symfony/stopwatch": "~2.2"
+        "silex/silex": "2.0.*@dev",
+        "symfony/web-profiler-bundle": ">=2.4,<2.6-dev",
+        "symfony/stopwatch": ">=2.4,<2.6-dev"
     },
     "autoload": {
         "psr-0": { "Silex\\Provider\\": "" }
@@ -20,7 +20,7 @@
     "target-dir": "Silex/Provider",
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0.x-dev"
+            "dev-2.0": "2.0.x-dev"
         }
     }
 }
