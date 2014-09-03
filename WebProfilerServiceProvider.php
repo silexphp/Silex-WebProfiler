@@ -191,8 +191,6 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $controllers->get('/search_bar', 'web_profiler.controller.profiler:searchBarAction')->bind('_profiler_search_bar');
         $controllers->get('/purge', 'web_profiler.controller.profiler:purgeAction')->bind('_profiler_purge');
         $controllers->get('/info/{about}', 'web_profiler.controller.profiler:infoAction')->bind('_profiler_info');
-        $controllers->get('/import', 'web_profiler.controller.profiler:importAction')->bind('_profiler_import');
-        $controllers->get('/export/{token}.txt', 'web_profiler.controller.profiler:exportAction')->bind('_profiler_export');
         $controllers->get('/phpinfo', 'web_profiler.controller.profiler:phpinfoAction')->bind('_profiler_phpinfo');
         $controllers->get('/{token}/search/results', 'web_profiler.controller.profiler:searchResultsAction')->bind('_profiler_search_results');
         $controllers->get('/{token}', 'web_profiler.controller.profiler:panelAction')->bind('_profiler');
