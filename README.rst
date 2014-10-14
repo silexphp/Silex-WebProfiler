@@ -4,15 +4,12 @@ Silex Web Profiler
 The Silex Web Profiler service provider allows you to use the wonderful Symfony
 web debug toolbar and the Symfony profiler in your Silex application.
 
-To enable it, add this dependency to your ``composer.json`` file:
+To install this library, run the command below and you will get the latest
+version:
 
-.. code-block:: json
+.. code-block:: bash
 
-    {
-        "require": {
-            "silex/web-profiler": "~1.0"
-        }
-    }
+    composer require silex/web-profiler
 
 And enable it in your application:
 
