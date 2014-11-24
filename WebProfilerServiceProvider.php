@@ -51,7 +51,6 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app['profiler.mount_prefix'] = '/_profiler';
         $app['dispatcher'] = $app->share($app->extend('dispatcher', function ($dispatcher, $app) {
             $dispatcher = new TraceableEventDispatcher($dispatcher, $app['stopwatch'], $app['logger']);
-            $dispatcher->setProfiler($app['profiler']);
 
             return $dispatcher;
         }));
@@ -73,7 +72,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
                 'config'    => $app->share(function ($app) { return new ConfigDataCollector(); }),
                 'request'   => $app->share(function ($app) { return new RequestDataCollector(); }),
                 'exception' => $app->share(function ($app) { return new ExceptionDataCollector(); }),
-                'events'    => $app->share(function ($app) { return new EventDataCollector(); }),
+                'events'    => $app->share(function ($app) { return new EventDataCollector($app['dispatcher']); }),
                 'logger'    => $app->share(function ($app) { return new LoggerDataCollector($app['logger']); }),
                 'time'      => $app->share(function ($app) { return new TimeDataCollector(null, $app['stopwatch']); }),
                 'router'    => $app->share(function ($app) { return new RouterDataCollector(); }),
