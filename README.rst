@@ -23,8 +23,9 @@ And enable it in your application:
     ));
 
 The provider depends on ``ServiceControllerServiceProvider``,
-``TwigServiceProvider``, ``HttpFragmentServiceProvider`` and ``RoutingServiceProvider``, so you also need
-to enable those if that's not already the case:
+``TwigServiceProvider``, ``HttpFragmentServiceProvider`` and
+``RoutingServiceProvider``, so you also need to enable those if that's not
+already the case:
 
 .. code-block:: php
 
