@@ -116,6 +116,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['web_profiler.toolbar.listener'] = function ($app) {
             $mode = $app['web_profiler.debug_toolbar.enable'] ? WebDebugToolbarListener::ENABLED : WebDebugToolbarListener::DISABLED;
+
             return new WebDebugToolbarListener($app['twig'], $app['web_profiler.debug_toolbar.intercept_redirects'], $mode, $app['web_profiler.debug_toolbar.position'], $app['url_generator']);
         };
 
