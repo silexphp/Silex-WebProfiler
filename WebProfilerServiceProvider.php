@@ -11,6 +11,8 @@
 
 namespace Silex\Provider;
 
+use Symfony\Bridge\Twig\DataCollector\TwigDataCollector;
+use Symfony\Bridge\Twig\Extension\ProfilerExtension;
 use Symfony\Bundle\WebProfilerBundle\Controller\ExceptionController;
 use Symfony\Bundle\WebProfilerBundle\Controller\RouterController;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
@@ -63,6 +65,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             array('router',    '@WebProfiler/Collector/router.html.twig'),
             array('memory',    '@WebProfiler/Collector/memory.html.twig'),
             array('form',      '@WebProfiler/Collector/form.html.twig'),
+            array('twig',      '@WebProfiler/Collector/twig.html.twig'),
         );
 
         $app['data_collectors'] = $app->share(function ($app) {
@@ -96,6 +99,20 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
                 return $extensions;
             }));
+        }
+
+        if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $app['data_collectors'] = $app->share($app->extend('data_collectors', function ($collectors, $app) {
+                $collectors['twig'] = $app->share(function ($app) {
+                    return new TwigDataCollector($app['twig.profiler.profile']);
+                });
+
+                return $collectors;
+            }));
+
+            $app['twig.profiler.profile'] = $app->share(function () {
+                return new \Twig_Profiler_Profile();
+            });
         }
 
         $app['web_profiler.controller.profiler'] = $app->share(function ($app) {
@@ -155,6 +172,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
             if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
                 $twig->addExtension(new WebProfilerExtension());
+            }
+
+            if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+                $twig->addExtension(new ProfilerExtension($app['twig.profiler.profile'], $app['stopwatch']));
             }
 
             return $twig;
