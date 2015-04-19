@@ -65,8 +65,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             array('router',    '@WebProfiler/Collector/router.html.twig'),
             array('memory',    '@WebProfiler/Collector/memory.html.twig'),
             array('form',      '@WebProfiler/Collector/form.html.twig'),
-            array('twig',      '@WebProfiler/Collector/twig.html.twig'),
         );
+
+        if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $app['data_collector.templates']['twig'] = '@WebProfiler/Collector/twig.html.twig';
+        }
 
         $app['data_collectors'] = $app->share(function ($app) {
             return array(
