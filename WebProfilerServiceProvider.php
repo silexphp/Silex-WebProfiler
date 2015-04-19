@@ -12,6 +12,8 @@
 namespace Silex\Provider;
 
 use Pimple\Container;
+use Symfony\Bridge\Twig\DataCollector\TwigDataCollector;
+use Symfony\Bridge\Twig\Extension\ProfilerExtension;
 use Symfony\Bundle\WebProfilerBundle\Controller\ExceptionController;
 use Symfony\Bundle\WebProfilerBundle\Controller\RouterController;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
@@ -69,6 +71,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             array('form',      '@WebProfiler/Collector/form.html.twig'),
         );
 
+        if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $app['data_collector.templates']['twig'] = '@WebProfiler/Collector/twig.html.twig';
+        }
+
         $app['data_collectors'] = function ($app) {
             return array(
                 'config'    => function ($app) { return new ConfigDataCollector(); },
@@ -99,6 +105,20 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
                 $extensions[] = new DataCollectorTypeExtension($app['data_collectors']['form']($app));
 
                 return $extensions;
+            });
+        }
+
+        if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $app['data_collectors'] = $app->share($app->extend('data_collectors', function ($collectors, $app) {
+                $collectors['twig'] = $app->share(function ($app) {
+                    return new TwigDataCollector($app['twig.profiler.profile']);
+                });
+
+                return $collectors;
+            }));
+
+            $app['twig.profiler.profile'] = $app->share(function () {
+                return new \Twig_Profiler_Profile();
             });
         }
 
@@ -146,7 +166,8 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
                 $app['profiler'],
                 $app['profiler.request_matcher'],
                 $app['profiler.only_exceptions'],
-                $app['profiler.only_master_requests']
+                $app['profiler.only_master_requests'],
+                $app['request_stack']
             );
         };
 
@@ -161,6 +182,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
             if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
                 $twig->addExtension(new WebProfilerExtension());
+            }
+
+            if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+                $twig->addExtension(new ProfilerExtension($app['twig.profiler.profile'], $app['stopwatch']));
             }
 
             return $twig;
