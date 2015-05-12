@@ -11,8 +11,13 @@
     ],
     "require": {
         "silex/silex": "2.0.*@dev",
-        "symfony/web-profiler-bundle": "~2.4",
-        "symfony/stopwatch": "~2.2"
+        "symfony/web-profiler-bundle": "~2.6",
+        "symfony/twig-bridge": "~2.6",
+        "symfony/stopwatch": "~2.6"
+    },
+    "require-dev": {
+        "symfony/browser-kit": "~2.6",
+        "symfony/css-selector": "~2.6"
     },
     "autoload": {
         "psr-0": { "Silex\\Provider\\": "" }
