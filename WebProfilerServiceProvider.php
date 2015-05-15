@@ -73,7 +73,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             );
 
             if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
-                $templates['twig'] = '@WebProfiler/Collector/twig.html.twig';
+                $templates[] = array('twig', '@WebProfiler/Collector/twig.html.twig');
             }
 
             return $templates;
