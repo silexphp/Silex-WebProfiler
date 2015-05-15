@@ -61,13 +61,42 @@ class WebProfilerTest extends WebTestCase
 
         $crawler = $client->request('GET', $link);
         $this->assertTrue($client->getResponse()->isOk(), 'Profile accessible');
-        $this->assertCount(1, $crawler->filter('#menu-profiler .twig'), 'Twig profiler is enabled');
-
-        $crawler = $client->click($crawler->filter('#menu-profiler .router a')->link());
-        $this->assertCount(1, $crawler->filter('table.routing'), 'Routing profiler is enabled');
 
         $client->followRedirects(true);
         $crawler = $client->request('GET', '/_profiler/');
         $this->assertTrue($client->getResponse()->isOk(), 'Profiler accessible');
+    }
+
+    public function testRoutingProfiler()
+    {
+        $client = $this->createClient();
+        $client->request('GET', '/');
+
+        $link = $client->getResponse()->headers->get('X-Debug-Token-Link');
+        $crawler = $client->request('GET', $link);
+
+        $crawler = $client->click($crawler->selectLink('Routing')->link());
+        $this->assertTrue($client->getResponse()->isOk(), 'Routing profiler is enabled');
+        $this->assertCount(1, $crawler->filter('h2:contains("Routing for")'), 'Routing profiler is working');
+    }
+
+    public function testTwigProfiler()
+    {
+        if (!class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $this->markTestSkipped(
+              'Twig profiler extension is available in Symfony 2.7+'
+            );
+        }
+
+        $client = $this->createClient();
+        $client->request('GET', '/');
+
+        $link = $client->getResponse()->headers->get('X-Debug-Token-Link');
+        $crawler = $client->request('GET', $link);
+
+        $crawler = $client->click($crawler->selectLink('Twig')->link());
+        $this->assertTrue($client->getResponse()->isOk(), 'Twig profiler is enabled');
+        $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats")'), 'Twig profiler is working');
+
     }
 }
