@@ -24,8 +24,11 @@ class WebProfilerTest extends WebTestCase
         // Service providers
         $app->register(new Provider\HttpFragmentServiceProvider());
         $app->register(new Provider\ServiceControllerServiceProvider());
-        $app->register(new Provider\TwigServiceProvider());
-        $app->register(new Provider\RoutingServiceProvider());
+        $app->register(new Provider\TwigServiceProvider(), array(
+            'twig.templates' => array(
+                'index.twig' => '<body>OK</body>',
+            ),
+        ));
 
         $app->register(new Provider\WebProfilerServiceProvider(), array(
             'profiler.cache_dir' => __DIR__.'/cache/profiler',
@@ -37,8 +40,8 @@ class WebProfilerTest extends WebTestCase
         $app['session.test'] = true;
 
         // Test route
-        $app->get('/', function () {
-            return '<body>OK</body>';
+        $app->get('/', function () use ($app) {
+            return $app['twig']->render('index.twig');
         });
 
         return $app;
@@ -62,5 +65,38 @@ class WebProfilerTest extends WebTestCase
         $client->followRedirects(true);
         $crawler = $client->request('GET', '/_profiler/');
         $this->assertTrue($client->getResponse()->isOk(), 'Profiler accessible');
+    }
+
+    public function testRoutingProfiler()
+    {
+        $client = $this->createClient();
+        $client->request('GET', '/');
+
+        $link = $client->getResponse()->headers->get('X-Debug-Token-Link');
+        $crawler = $client->request('GET', $link);
+
+        $crawler = $client->click($crawler->selectLink('Routing')->link());
+        $this->assertTrue($client->getResponse()->isOk(), 'Routing profiler is enabled');
+        $this->assertCount(1, $crawler->filter('h2:contains("Routing for")'), 'Routing profiler is working');
+    }
+
+    public function testTwigProfiler()
+    {
+        if (!class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
+            $this->markTestSkipped(
+              'Twig profiler extension is available in Symfony 2.7+'
+            );
+        }
+
+        $client = $this->createClient();
+        $client->request('GET', '/');
+
+        $link = $client->getResponse()->headers->get('X-Debug-Token-Link');
+        $crawler = $client->request('GET', $link);
+
+        $crawler = $client->click($crawler->selectLink('Twig')->link());
+        $this->assertTrue($client->getResponse()->isOk(), 'Twig profiler is enabled');
+        $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats")'), 'Twig profiler is working');
+
     }
 }
