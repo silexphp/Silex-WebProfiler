@@ -63,6 +63,9 @@ class WebProfilerTest extends WebTestCase
         $this->assertTrue($client->getResponse()->isOk(), 'Profile accessible');
         $this->assertCount(1, $crawler->filter('#menu-profiler .twig'), 'Twig profiler is enabled');
 
+        $crawler = $client->click($crawler->filter('#menu-profiler .router a')->link());
+        $this->assertCount(1, $crawler->filter('table.routing'), 'Routing profiler is enabled');
+
         $client->followRedirects(true);
         $crawler = $client->request('GET', '/_profiler/');
         $this->assertTrue($client->getResponse()->isOk(), 'Profiler accessible');
