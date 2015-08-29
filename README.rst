@@ -23,16 +23,14 @@ And enable it in your application:
     ));
 
 The provider depends on ``ServiceControllerServiceProvider``,
-``TwigServiceProvider``, ``HttpFragmentServiceProvider`` and
-``RoutingServiceProvider``, so you also need to enable those if that's not
-already the case:
+``TwigServiceProvider``, and ``HttpFragmentServiceProvider`` so you also need
+to enable those if that's not already the case:
 
 .. code-block:: php
 
     $app->register(new Provider\HttpFragmentServiceProvider());
     $app->register(new Provider\ServiceControllerServiceProvider());
     $app->register(new Provider\TwigServiceProvider());
-    $app->register(new Provider\RoutingServiceProvider());
 
 If you are using ``FormServiceProvider``, the ``WebProfilerServiceProvider`` will detect that and
 enable the corresponding panels.
