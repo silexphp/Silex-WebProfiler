@@ -32,11 +32,16 @@ to enable those if that's not already the case:
     $app->register(new Provider\ServiceControllerServiceProvider());
     $app->register(new Provider\TwigServiceProvider());
 
-If you are using ``FormServiceProvider``, the ``WebProfilerServiceProvider`` will detect that and
-enable the corresponding panels.
+If you are using ``FormServiceProvider``, the ``WebProfilerServiceProvider``
+will detect that and enable the corresponding panels.
 
-*Make sure to register all other required or used service providers before* ``WebProfilerServiceProvider``.
+*Make sure to register all other required or used service providers before*
+``WebProfilerServiceProvider``.
 
 If you are using ``MonologServiceProvider`` for logs, you must also add
-``symfony/monolog-bridge`` as a dependency in your ``composer.json`` to get the
+``symfony/monolog-bridge`` as a Composer dependency to get the
 logs in the profiler.
+
+If you are using ``VarDumperServiceProvider``, add ``symfony/debug-bundle`` as
+a Composer dependency to display VarDumper dumps in the toolbar and the
+profiler.

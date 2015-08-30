@@ -25,9 +25,11 @@ use Symfony\Component\Form\Extension\DataCollector\FormDataExtractor;
 use Symfony\Component\Form\Extension\DataCollector\Proxy\ResolvedTypeFactoryDataCollectorProxy;
 use Symfony\Component\Form\Extension\DataCollector\Type\DataCollectorTypeExtension;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Symfony\Component\HttpKernel\EventListener\DumpListener;
 use Symfony\Component\HttpKernel\EventListener\ProfilerListener;
 use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
 use Symfony\Component\HttpKernel\DataCollector\ConfigDataCollector;
+use Symfony\Component\HttpKernel\DataCollector\DumpDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\ExceptionDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\RequestDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\RouterDataCollector;
@@ -74,6 +76,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
             if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
                 $templates[] = array('twig', '@WebProfiler/Collector/twig.html.twig');
+            }
+
+            if (isset($app['var_dumper.cli_dumper']) && $app['profiler.templates_path.debug']) {
+                $templates[] = array('dump', '@Debug/Profiler/dump.html.twig');
             }
 
             return $templates;
@@ -124,6 +130,24 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             $app['twig.profiler.profile'] = function () {
                 return new \Twig_Profiler_Profile();
             };
+        }
+
+        if (isset($app['var_dumper.cli_dumper'])) {
+            $app['var_dumper.dump_listener'] = function ($app) {
+                return new DumpListener($app['var_dumper.cloner'], $app['var_dumper.data_collector']);
+            };
+
+            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+                if ($app['profiler.templates_path.debug']) {
+                    $collectors['dump'] = function ($app) {
+                        $dumper = null === $app['var_dumper.dump_destination'] ? null : $app['var_dumper.cli_dumper'];
+
+                        return $app['var_dumper.data_collector'] = new DumpDataCollector($app['stopwatch'], null, $app['charset'], $app['request_stack'], $dumper);
+                    };
+                }
+
+                return $collectors;
+            });
         }
 
         $app['web_profiler.controller.profiler'] = function ($app) {
@@ -197,6 +221,9 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app->extend('twig.loader.filesystem', function ($loader, $app) {
             $loader->addPath($app['profiler.templates_path'], 'WebProfiler');
+            if ($app['profiler.templates_path.debug']) {
+                $loader->addPath($app['profiler.templates_path.debug'], 'Debug');
+            }
 
             return $loader;
         });
@@ -205,6 +232,15 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             $r = new \ReflectionClass('Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener');
 
             return dirname(dirname($r->getFileName())).'/Resources/views';
+        };
+
+        $app['profiler.templates_path.debug'] = function () {
+            $autoloader = spl_autoload_functions()[0][0];
+            if (!$file = $autoloader->findFile('Symfony\Bundle\DebugBundle\DebugBundle')) {
+                return;
+            }
+
+            return dirname($file).'/Resources/views';
         };
     }
 
@@ -247,5 +283,9 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }
 
         $dispatcher->addSubscriber($app['profiler']->get('request'));
+
+        if (isset($app['var_dumper.data_collector'])) {
+            $dispatcher->addSubscriber($app['var_dumper.dump_listener']);
+        }
     }
 }
