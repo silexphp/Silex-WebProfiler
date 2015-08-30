@@ -11,13 +11,14 @@
     ],
     "require": {
         "silex/silex": "2.0.*@dev",
-        "symfony/web-profiler-bundle": "~2.6",
-        "symfony/twig-bridge": "~2.6",
-        "symfony/stopwatch": "~2.6"
+        "symfony/web-profiler-bundle": "~2.7",
+        "symfony/twig-bridge": "~2.7",
+        "symfony/stopwatch": "~2.7"
     },
     "require-dev": {
-        "symfony/browser-kit": "~2.6",
-        "symfony/css-selector": "~2.6"
+        "symfony/browser-kit": "~2.7",
+        "symfony/css-selector": "~2.7",
+        "symfony/debug-bundle": "~2.7"
     },
     "autoload": {
         "psr-0": { "Silex\\Provider\\": "" }
