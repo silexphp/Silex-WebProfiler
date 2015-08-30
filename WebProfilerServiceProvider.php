@@ -81,14 +81,14 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['data_collectors'] = function ($app) {
             return array(
-                'config'    => function ($app) { return new ConfigDataCollector('Silex', Application::VERSION); },
-                'request'   => function ($app) { return new RequestDataCollector(); },
+                'config' => function ($app) { return new ConfigDataCollector('Silex', Application::VERSION); },
+                'request' => function ($app) { return new RequestDataCollector(); },
                 'exception' => function ($app) { return new ExceptionDataCollector(); },
-                'events'    => function ($app) { return new EventDataCollector($app['dispatcher']); },
-                'logger'    => function ($app) { return new LoggerDataCollector($app['logger']); },
-                'time'      => function ($app) { return new TimeDataCollector(null, $app['stopwatch']); },
-                'router'    => function ($app) { return new RouterDataCollector(); },
-                'memory'    => function ($app) { return new MemoryDataCollector(); },
+                'events' => function ($app) { return new EventDataCollector($app['dispatcher']); },
+                'logger' => function ($app) { return new LoggerDataCollector($app['logger']); },
+                'time' => function ($app) { return new TimeDataCollector(null, $app['stopwatch']); },
+                'router' => function ($app) { return new RouterDataCollector(); },
+                'memory' => function ($app) { return new MemoryDataCollector(); },
             );
         };
 

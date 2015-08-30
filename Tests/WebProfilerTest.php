@@ -97,6 +97,5 @@ class WebProfilerTest extends WebTestCase
         $crawler = $client->click($crawler->selectLink('Twig')->link());
         $this->assertTrue($client->getResponse()->isOk(), 'Twig profiler is enabled');
         $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats")'), 'Twig profiler is working');
-
     }
 }
