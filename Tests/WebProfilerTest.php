@@ -77,7 +77,7 @@ class WebProfilerTest extends WebTestCase
 
         $crawler = $client->click($crawler->selectLink('Routing')->link());
         $this->assertTrue($client->getResponse()->isOk(), 'Routing profiler is enabled');
-        $this->assertCount(1, $crawler->filter('h2:contains("Routing for")'), 'Routing profiler is working');
+        $this->assertCount(1, $crawler->filter('h2:contains("Routing for"), h3:contains("Route Matching Logs")'), 'Routing profiler is working');
     }
 
     public function testTwigProfiler()
@@ -94,6 +94,6 @@ class WebProfilerTest extends WebTestCase
 
         $crawler = $client->click($crawler->selectLink('Twig')->link());
         $this->assertTrue($client->getResponse()->isOk(), 'Twig profiler is enabled');
-        $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats")'), 'Twig profiler is working');
+        $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats"), h2:contains("Twig Metrics")'), 'Twig profiler is working');
     }
 }
