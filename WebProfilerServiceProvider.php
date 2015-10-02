@@ -24,6 +24,7 @@ use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\Form\Extension\DataCollector\FormDataExtractor;
 use Symfony\Component\Form\Extension\DataCollector\Proxy\ResolvedTypeFactoryDataCollectorProxy;
 use Symfony\Component\Form\Extension\DataCollector\Type\DataCollectorTypeExtension;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\HttpKernel\EventListener\DumpListener;
 use Symfony\Component\HttpKernel\EventListener\ProfilerListener;
@@ -190,13 +191,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app['web_profiler.debug_toolbar.intercept_redirects'] = false;
 
         $app['profiler.listener'] = function ($app) {
-            return new ProfilerListener(
-                $app['profiler'],
-                $app['profiler.request_matcher'],
-                $app['profiler.only_exceptions'],
-                $app['profiler.only_master_requests'],
-                $app['request_stack']
-            );
+            if (Kernel::VERSION_ID >= 20800) {
+                return new ProfilerListener($app['profiler'], $app['request_stack'], $app['profiler.request_matcher'], $app['profiler.only_exceptions'], $app['profiler.only_master_requests']);
+            } else {
+                return new ProfilerListener($app['profiler'], $app['profiler.request_matcher'], $app['profiler.only_exceptions'], $app['profiler.only_master_requests'], $app['request_stack']);
+            }
         };
 
         $app['stopwatch'] = function () {
