@@ -29,6 +29,7 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\HttpKernel\EventListener\DumpListener;
 use Symfony\Component\HttpKernel\EventListener\ProfilerListener;
 use Symfony\Component\HttpKernel\Profiler\FileProfilerStorage;
+use Symfony\Component\HttpKernel\DataCollector\AjaxDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\ConfigDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\DumpDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\ExceptionDataCollector;
@@ -81,6 +82,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
             if (isset($app['var_dumper.cli_dumper']) && $app['profiler.templates_path.debug']) {
                 $templates[] = array('dump', '@Debug/Profiler/dump.html.twig');
+            }
+
+            if (class_exists('Symfony\Component\HttpKernel\DataCollector\AjaxDataCollector')) {
+                $templates[] = array('ajax', '@WebProfiler/Collector/ajax.html.twig');
             }
 
             return $templates;
@@ -146,6 +151,16 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
                         return $app['var_dumper.data_collector'] = new DumpDataCollector($app['stopwatch'], null, $app['charset'], $app['request_stack'], $dumper);
                     };
                 }
+
+                return $collectors;
+            });
+        }
+
+        if (class_exists('Symfony\Component\HttpKernel\DataCollector\AjaxDataCollector')) {
+            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+                $collectors['ajax'] = function ($app) {
+                    return new AjaxDataCollector();
+                };
 
                 return $collectors;
             });
