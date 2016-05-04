@@ -23,11 +23,13 @@ And enable it in your application:
     ));
 
 The provider depends on ``ServiceControllerServiceProvider``,
-``TwigServiceProvider`` and ``UrlGeneratorServiceProvider``, so you also need
+``TwigServiceProvider``, ``HttpFragmentServiceProvider``, 
+and ``UrlGeneratorServiceProvider``, so you also need
 to enable those if that's not already the case:
 
 .. code-block:: php
 
+    $app->register(new Provider\HttpFragmentServiceProvider());
     $app->register(new Provider\ServiceControllerServiceProvider());
     $app->register(new Provider\TwigServiceProvider());
     $app->register(new Provider\UrlGeneratorServiceProvider());
