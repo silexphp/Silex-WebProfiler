@@ -2,7 +2,10 @@ Silex Web Profiler
 ==================
 
 The Silex Web Profiler service provider allows you to use the wonderful Symfony
-web debug toolbar and the Symfony profiler in your Silex application.
+web debug toolbar and the Symfony profiler in your Silex 2.x application. Check out the 1.0_ branch for documentation for Silex 1 projects. 
+
+.. _1.0: https://github.com/silexphp/Silex-WebProfiler/tree/1.0
+
 
 To install this library, run the command below and you will get the latest
 version:
