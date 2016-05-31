@@ -14,6 +14,7 @@ namespace Silex\Provider\Tests;
 use Silex\Application;
 use Silex\WebTestCase;
 use Silex\Provider;
+use Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder;
 
 class WebProfilerTest extends WebTestCase
 {
@@ -24,6 +25,23 @@ class WebProfilerTest extends WebTestCase
         // Service providers
         $app->register(new Provider\HttpFragmentServiceProvider());
         $app->register(new Provider\ServiceControllerServiceProvider());
+        $app->register(new Provider\SecurityServiceProvider(), array(
+            'security.firewalls' => array(
+                'secured' => array(
+                    'pattern' => '^/secured',
+                    'form' => array('login_path' => '/login', 'check_path' => '/login_check'),
+                    'logout' => array('logout_path' => '/secured/logout', 'invalidate_session' => true),
+                    'users' => array(
+                        'admin' => array('ROLE_ADMIN', 'admin_pass'),
+                    ),
+                ),
+                'default' => array(
+                    'pattern' => '^.*$',
+                    'anonymous' => true,
+                ),
+            ),
+            'security.encoder.digest' => new PlaintextPasswordEncoder(),
+        ));
         $app->register(new Provider\TwigServiceProvider(), array(
             'twig.templates' => array(
                 'index.twig' => '<body>OK</body>',
@@ -95,5 +113,19 @@ class WebProfilerTest extends WebTestCase
         $crawler = $client->click($crawler->selectLink('Twig')->link());
         $this->assertTrue($client->getResponse()->isOk(), 'Twig profiler is enabled');
         $this->assertCount(1, $crawler->filter('h2:contains("Twig Stats"), h2:contains("Twig Metrics")'), 'Twig profiler is working');
+    }
+
+    public function testSecurityProfiler()
+    {
+        $client = $this->createClient();
+        $client->request('GET', '/');
+
+        $link = $client->getResponse()->headers->get('X-Debug-Token-Link');
+        $crawler = $client->request('GET', $link);
+
+        $crawler = $client->click($crawler->selectLink('Security')->link());
+        $this->assertTrue($client->getResponse()->isOk(), 'Security profiler is enabled');
+        $this->assertCount(1, $crawler->filter('h2:contains("Security Token")'), 'Security profiler is working');
+        $this->assertCount(1, $crawler->filter('span:contains("Anonymous")'), 'Profiler gets anonymous token');
     }
 }
