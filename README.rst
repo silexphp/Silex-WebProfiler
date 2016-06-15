@@ -14,7 +14,7 @@ version:
 
 .. code-block:: bash
 
-    composer require silex/web-profiler ~2.0@dev
+    composer require 'silex/web-profiler:^2.0'
 
 And enable it in your application:
 
