@@ -49,6 +49,7 @@ use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
 use Symfony\Component\HttpKernel\Debug\TraceableEventDispatcher;
 use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
+use Symfony\Component\Security\Core\Role\RoleHierarchy;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Yaml\Yaml;
 
@@ -172,7 +173,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         if (isset($app['security.token_storage']) && class_exists('Symfony\Bundle\SecurityBundle\DataCollector\SecurityDataCollector')) {
             $app->extend('data_collectors', function ($collectors, $app) {
                 $collectors['security'] = function ($app) {
-                    $roleHierarchy = !empty($app['security.role_hierarchy']) ? $app['security.role_hierarchy'] : null;
+                    $roleHierarchy = new RoleHierarchy($app['security.role_hierarchy']);
                     $logoutUrlGenerator = new LogoutUrlGenerator($app['request_stack'], $app['url_generator'], $app['security.token_storage']);
 
                     return new SecurityDataCollector($app['security.token_storage'], $roleHierarchy, $logoutUrlGenerator);
