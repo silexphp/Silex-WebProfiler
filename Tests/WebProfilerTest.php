@@ -41,6 +41,9 @@ class WebProfilerTest extends WebTestCase
                 ),
             ),
             'security.encoder.digest' => new PlaintextPasswordEncoder(),
+            'security.role_hierarchy' => array(
+                'ROLE_ADMIN' => array('ROLE_USER', 'ROLE_ALLOWED_TO_SWITCH'),
+            ),
         ));
         $app->register(new Provider\TwigServiceProvider(), array(
             'twig.templates' => array(
