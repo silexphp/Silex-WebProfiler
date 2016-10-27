@@ -47,6 +47,7 @@ use Symfony\Component\HttpKernel\DataCollector\MemoryDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\TimeDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
+use Symfony\Component\HttpKernel\Debug\FileLinkFormatter;
 use Symfony\Component\HttpKernel\Debug\TraceableEventDispatcher;
 use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
@@ -68,6 +69,8 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app->extend('dispatcher', function ($dispatcher, $app) {
             return new TraceableEventDispatcher($dispatcher, $app['stopwatch'], $app['logger']);
         });
+
+        $baseDir = $this->getBaseDir();
 
         $app['data_collector.templates'] = function ($app) {
             $templates = array(
@@ -232,8 +235,8 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             });
         }
 
-        $app['web_profiler.controller.profiler'] = function ($app) {
-            return new ProfilerController($app['url_generator'], $app['profiler'], $app['twig'], $app['data_collector.templates'], $app['web_profiler.debug_toolbar.position']);
+        $app['web_profiler.controller.profiler'] = function ($app) use ($baseDir) {
+            return new ProfilerController($app['url_generator'], $app['profiler'], $app['twig'], $app['data_collector.templates'], $app['web_profiler.debug_toolbar.position'], null, $baseDir);
         };
 
         $app['web_profiler.controller.router'] = function ($app) {
@@ -285,7 +288,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['code.file_link_format'] = null;
 
-        $app->extend('twig', function ($twig, $app) {
+        $app->extend('twig', function ($twig, $app) use ($baseDir) {
+            if (class_exists('\Symfony\Component\HttpKernel\Debug\FileLinkFormatter')) {
+                $app['code.file_link_format'] = new FileLinkFormatter($app['code.file_link_format'], $app['request_stack'], $baseDir, '/_profiler/open?file=%f&line=%l#line%l');
+            }
+
             $twig->addExtension(new CodeExtension($app['code.file_link_format'], '', $app['charset']));
 
             if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
@@ -344,6 +351,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $controllers->get('/purge', 'web_profiler.controller.profiler:purgeAction')->bind('_profiler_purge');
         $controllers->get('/info/{about}', 'web_profiler.controller.profiler:infoAction')->bind('_profiler_info');
         $controllers->get('/phpinfo', 'web_profiler.controller.profiler:phpinfoAction')->bind('_profiler_phpinfo');
+        $controllers->get('/open', 'web_profiler.controller.profiler:openAction')->bind('_profiler_open_file');
         $controllers->get('/{token}/search/results', 'web_profiler.controller.profiler:searchResultsAction')->bind('_profiler_search_results');
         $controllers->get('/{token}', 'web_profiler.controller.profiler:panelAction')->bind('_profiler');
         $controllers->get('/wdt/{token}', 'web_profiler.controller.profiler:toolbarAction')->bind('_wdt');
@@ -370,5 +378,22 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         if (isset($app['var_dumper.data_collector'])) {
             $dispatcher->addSubscriber($app['var_dumper.dump_listener']);
         }
+    }
+
+    private function getBaseDir()
+    {
+        $baseDir = array();
+        $rootDir = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $rootDir = end($rootDir)['file'];
+        $rootDir = explode(DIRECTORY_SEPARATOR, realpath($rootDir) ?: $rootDir);
+        $providerDir = explode(DIRECTORY_SEPARATOR, __DIR__);
+        for ($i = 0; isset($rootDir[$i], $providerDir[$i]); ++$i) {
+            if ($rootDir[$i] !== $providerDir[$i]) {
+                break;
+            }
+            $baseDir[] = $rootDir[$i];
+        }
+
+        return implode(DIRECTORY_SEPARATOR, $baseDir);
     }
 }
