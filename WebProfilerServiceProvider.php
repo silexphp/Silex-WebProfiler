@@ -209,11 +209,11 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             };
 
             $app['twig'] = $app->extend('twig', function ($twig, $app) {
-                $twig->addFilter('yaml_encode', new \Twig_SimpleFilter('yaml_encode', function (array $var) {
+                $twig->addFilter(new \Twig_SimpleFilter('yaml_encode', function (array $var) {
                     return Yaml::dump($var);
                 }));
 
-                $twig->addFunction('yaml_encode', new \Twig_SimpleFunction('yaml_encode', function (array $var) {
+                $twig->addFunction(new \Twig_SimpleFunction('yaml_encode', function (array $var) {
                     return Yaml::dump($var);
                 }));
 
