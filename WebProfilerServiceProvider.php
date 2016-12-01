@@ -116,9 +116,10 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         if (isset($app['form.resolved_type_factory']) && class_exists('\Symfony\Component\Form\Extension\DataCollector\FormDataCollector')) {
             $app['data_collectors.form.extractor'] = function () { return new FormDataExtractor(); };
+            $app['data_collectors.form.collector'] = function ($app) { return new FormDataCollector($app['data_collectors.form.extractor']); };
 
             $app->extend('data_collectors', function ($collectors, $app) {
-                $collectors['form'] = function ($app) { return new FormDataCollector($app['data_collectors.form.extractor']); };
+                $collectors['form'] = function ($app) { return $app['data_collectors.form.collector']; };
 
                 return $collectors;
             });
