@@ -379,6 +379,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $dispatcher->addSubscriber($app['profiler']->get('request'));
 
         if (isset($app['var_dumper.data_collector'])) {
+            $app['var_dumper.dump_listener']->configure();
             $dispatcher->addSubscriber($app['var_dumper.dump_listener']);
         }
     }
