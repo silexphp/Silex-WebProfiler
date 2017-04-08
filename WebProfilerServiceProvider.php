@@ -114,7 +114,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
             );
         };
 
-        if (isset($app['form.resolved_type_factory']) && class_exists('\Symfony\Component\Form\Extension\DataCollector\FormDataCollector')) {
+        if (isset($app['form.resolved_type_factory']) && class_exists('Symfony\Component\Form\Extension\DataCollector\FormDataCollector')) {
             $app['data_collectors.form.extractor'] = function () { return new FormDataExtractor(); };
 
             $app->extend('data_collectors', function ($collectors, $app) {
@@ -289,13 +289,13 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         $app['code.file_link_format'] = null;
 
         $app->extend('twig', function ($twig, $app) use ($baseDir) {
-            if (class_exists('\Symfony\Component\HttpKernel\Debug\FileLinkFormatter')) {
+            if (class_exists('Symfony\Component\HttpKernel\Debug\FileLinkFormatter')) {
                 $app['code.file_link_format'] = new FileLinkFormatter($app['code.file_link_format'], $app['request_stack'], $baseDir, '/_profiler/open?file=%f&line=%l#line%l');
             }
 
             $twig->addExtension(new CodeExtension($app['code.file_link_format'], '', $app['charset']));
 
-            if (class_exists('\Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
+            if (class_exists('Symfony\Bundle\WebProfilerBundle\Twig\WebProfilerExtension')) {
                 $twig->addExtension(new WebProfilerExtension());
             }
 
