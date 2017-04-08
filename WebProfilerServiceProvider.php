@@ -322,15 +322,9 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         };
 
         $app['profiler.templates_path.debug'] = function () {
-            foreach (spl_autoload_functions() as $autoloader) {
-                if (!is_array($autoloader) || !method_exists($autoloader[0], 'findFile')) {
-                    continue;
-                }
+            $r = new \ReflectionClass('Symfony\Bundle\DebugBundle\Tests\DependencyInjection\DebugExtensionTest');
 
-                if ($file = $autoloader[0]->findFile('Symfony\Bundle\DebugBundle\DebugBundle')) {
-                    return dirname($file).'/Resources/views';
-                }
-            }
+            return dirname(dirname(dirname($r->getFileName()))).'/Resources/views';
         };
     }
 
