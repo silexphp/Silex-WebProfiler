@@ -103,10 +103,6 @@ class WebProfilerTest extends WebTestCase
 
     public function testTwigProfiler()
     {
-        if (!class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
-            $this->markTestSkipped('Twig profiler extension is available in Symfony 2.7+');
-        }
-
         $client = $this->createClient();
         $client->request('GET', '/');
 
