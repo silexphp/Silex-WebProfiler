@@ -323,6 +323,8 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         };
 
         $app['profiler.templates_path.debug'] = function () {
+            // This code cannot be simplified as all classes in the bundle depend
+            // on packages that are not required by Silex
             foreach (spl_autoload_functions() as $autoloader) {
                 if (!is_array($autoloader) || !method_exists($autoloader[0], 'findFile')) {
                     continue;
