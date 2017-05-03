@@ -50,3 +50,7 @@ logs in the profiler.
 If you are using ``VarDumperServiceProvider``, add ``symfony/debug-bundle`` as
 a Composer dependency to display VarDumper dumps in the toolbar and the
 profiler.
+
+If you are using ``symfony/security``, add ``symfony/security-bundle`` as
+a Composer dependency to display Security related information in the toolbar
+and the profiler.
