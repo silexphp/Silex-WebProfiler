@@ -2,7 +2,7 @@ Silex Web Profiler
 ==================
 
 **WARNING**: Silex is in maintenance mode only. Ends of life is set to June
-2018. Read more on [Symfony's blog](http://symfony.com/blog/the-end-of-silex).
+2018. Read more on `Symfony's blog <http://symfony.com/blog/the-end-of-silex>`_.
 
 The Silex Web Profiler service provider allows you to use the wonderful Symfony
 web debug toolbar and the Symfony profiler in your Silex 2.x application.
