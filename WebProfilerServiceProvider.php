@@ -309,6 +309,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app->extend('twig.loader.filesystem', function ($loader, $app) {
             $loader->addPath($app['profiler.templates_path'], 'WebProfiler');
+            $loader->addPath($app['profiler.templates_path.twig'], 'Twig');
             if ($app['profiler.templates_path.debug']) {
                 $loader->addPath($app['profiler.templates_path.debug'], 'Debug');
             }
@@ -318,6 +319,12 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
 
         $app['profiler.templates_path'] = function () {
             $r = new \ReflectionClass('Symfony\Bundle\WebProfilerBundle\EventListener\WebDebugToolbarListener');
+
+            return dirname(dirname($r->getFileName())).'/Resources/views';
+        };
+
+        $app['profiler.templates_path.twig'] = function () {
+            $r = new \ReflectionClass('Symfony\Bundle\TwigBundle\Controller\ExceptionController');
 
             return dirname(dirname($r->getFileName())).'/Resources/views';
         };
