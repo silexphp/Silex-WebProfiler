@@ -136,7 +136,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }
 
         if (class_exists('Symfony\Bridge\Twig\Extension\ProfilerExtension')) {
-            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+            $app->extend('data_collectors', function ($collectors, $app) {
                 $collectors['twig'] = function ($app) {
                     return new TwigDataCollector($app['twig.profiler.profile'], $app['twig']);
                 };
@@ -154,7 +154,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
                 return new DumpListener($app['var_dumper.cloner'], $app['var_dumper.data_collector']);
             };
 
-            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+            $app->extend('data_collectors', function ($collectors, $app) {
                 if ($app['profiler.templates_path.debug']) {
                     $collectors['dump'] = function ($app) {
                         $dumper = null === $app['var_dumper.dump_destination'] ? null : $app['var_dumper.cli_dumper'];
@@ -168,7 +168,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }
 
         if (class_exists('Symfony\Component\HttpKernel\DataCollector\AjaxDataCollector')) {
-            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+            $app->extend('data_collectors', function ($collectors, $app) {
                 $collectors['ajax'] = function ($app) {
                     return new AjaxDataCollector();
                 };
@@ -223,7 +223,7 @@ class WebProfilerServiceProvider implements ServiceProviderInterface, Controller
         }
 
         if (isset($app['translator']) && class_exists('Symfony\Component\Translation\DataCollector\TranslationDataCollector')) {
-            $app['data_collectors'] = $app->extend('data_collectors', function ($collectors, $app) {
+            $app->extend('data_collectors', function ($collectors, $app) {
                 $collectors['translation'] = function ($app) {
                     return new TranslationDataCollector($app['translator']);
                 };
